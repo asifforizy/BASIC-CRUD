@@ -1,14 +1,32 @@
-import React from 'react';
+import React, { use, useState } from 'react';
 
-const Users = () => {
+const Users = ({usersPromise}) => {
 
+    const initialUsers = use(usersPromise);
+
+    const [users,setUsers] = useState(initialUsers);
 
     const handleSubmit = (event) => {
         event.preventDefault();
         const name = event.target.name.value;
         const email = event.target.email.value;
-        console.log(name,email);
 
+        const newUser = {name,email};
+
+        fetch('http://localhost:3000/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newUser) 
+        })
+        .then(res=>res.json())
+        .then(data=>{console.log('after saving user',data)
+            if(data.insertedId){
+                newUser._id = data.insertedId;
+                setUsers([...users,newUser])
+            }
+        })
 
 
     }
@@ -23,6 +41,15 @@ const Users = () => {
                 <input type="email" name='email' className='border rounded p-2 mb-2'/><br />
                 <input type="submit" value={'submit'} className='bg-blue-500 text-white p-2 rounded'/>
             </form>
+            </div>
+
+            <div>
+                <h2 className='text-2xl text-green-600 font-bold mt-10 mb-5'>Users List</h2>
+                <ul>
+                    {
+                        users.map(user=> <li key={user._id}>{user.name} - {user.email}</li>)
+                    }
+                </ul>
             </div>
         </div>
     );
